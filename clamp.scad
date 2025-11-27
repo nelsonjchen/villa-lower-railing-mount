@@ -10,7 +10,7 @@ post_gap_inches = 3.6;        // 3 and 6/10 inches between posts
 post_gap = post_gap_inches * inch;
 
 // Mount Dimensions
-mount_thickness = 10;         // "1cm thickness of mount" (Vertical thickness of main bar)
+mount_thickness = 5;         // "1cm thickness of mount" (Vertical thickness of main bar)
 mount_depth = 20;             // How wide the bracket is (Y-axis length)
 lip_width = 3;                // Reduced from 1/4 inch to ~3mm for easier clamping
 wall_thickness = 3;           // Reduced from 6mm to 3mm for flexibility
@@ -22,7 +22,7 @@ bolt_diameter = 4.4;          // M4 screw (4mm + 0.4mm clearance)
 // Tolerance / Clearance
 // Add a small gap so it slides easily onto the real world posts.
 // Increase this if your printer prints "tight".
-clearance = 0.4;
+clearance = 1.0;
 
 // Overlap for boolean operations
 // Tiny overlap to prevent "Z-fighting" (flickering seams) in preview
