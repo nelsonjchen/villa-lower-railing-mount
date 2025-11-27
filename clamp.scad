@@ -24,6 +24,10 @@ bolt_diameter = 4.4;          // M4 screw (4mm + 0.4mm clearance)
 // Increase this if your printer prints "tight".
 clearance = 0.4;
 
+// Overlap for boolean operations
+// Tiny overlap to prevent "Z-fighting" (flickering seams) in preview
+overlap = 0.1;
+
 // --- Calculations (Do not edit unless you know what you're doing) ---
 total_width = post_gap + (2 * post_size) + (2 * wall_thickness);
 center_offset = total_width / 2;
@@ -48,7 +52,8 @@ module mount() {
             // B. Left Clamp Logic
             translate([-post_start_x - post_size - wall_thickness - clearance, -mount_depth/2, -leg_height]) {
                 // Side Wall
-                cube([wall_thickness, mount_depth, leg_height]);
+                // Added +overlap to height so it merges into the top bar
+                cube([wall_thickness, mount_depth, leg_height + overlap]);
 
                 // Bottom Lip (Hook)
                 cube([wall_thickness + lip_width, mount_depth, wall_thickness]);
@@ -57,7 +62,8 @@ module mount() {
             // C. Right Clamp Logic
             translate([post_start_x + post_size + clearance, -mount_depth/2, -leg_height]) {
                 // Side Wall
-                cube([wall_thickness, mount_depth, leg_height]);
+                // Added +overlap to height so it merges into the top bar
+                cube([wall_thickness, mount_depth, leg_height + overlap]);
 
                 // Bottom Lip (Hook) - Needs to point inward, so we shift X back
                 translate([-lip_width, 0, 0])
