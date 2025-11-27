@@ -1,20 +1,21 @@
 // --- Parametric Wire Cover Mount ---
 // Modified: Removed bolt holes.
 // Clamps remain on the ENCLOSED side (High Y).
+// Rotated 180 degrees for preview (Clips facing UP).
 
 // --- Dimensions ---
-inch = 25.4;
+inch = 25.4; 
 
 // Post Dimensions
-post_size = 0.5 * inch;
-post_gap_inches = 3.6;
+post_size = 0.5 * inch;       
+post_gap_inches = 3.6;        
 post_gap = post_gap_inches * inch;
 
 // Mount Dimensions
-mount_thickness = 40;        // Height of the box
+mount_thickness = 40;         // Height of the box (Updated to 40)
 mount_depth = 120;            // Depth of the box
 clamp_depth = 20;             // Depth of the clamps only
-lip_width = 3;
+lip_width = 3;                
 wall_thickness = 3;           // Thickness of the shell walls
 
 // Tolerance
@@ -37,7 +38,7 @@ module wire_cover_mount() {
             // A. Outer Cube
             translate([-total_width/2, -mount_depth/2, 0])
                 cube([total_width, mount_depth, mount_thickness]);
-
+            
             // B. Inner Cube (The Hollow part)
             // We cut away the inside, leaving walls on Top, Front, Left, Right
             // We leave the Bottom and Back OPEN for wires.
@@ -56,25 +57,25 @@ module wire_cover_mount() {
         // 2. THE CLAMPS (Moved to ENCLOSED SIDE / High Y)
         // Left Clamp
         translate([
-            -post_start_x - post_size - wall_thickness - clearance,
+            -post_start_x - post_size - wall_thickness - clearance, 
             mount_depth/2 - clamp_depth, // MOVED: Now at the positive Y end (enclosed side)
             -leg_height
         ]) {
             cube([wall_thickness, clamp_depth, leg_height + overlap]);
-            translate([wall_thickness, clamp_depth, 0])
-                rotate([90, 0, 0])
+            translate([wall_thickness, clamp_depth, 0]) 
+                rotate([90, 0, 0]) 
                 linear_extrude(clamp_depth)
                 polygon([[0, 0], [lip_width, wall_thickness], [0, wall_thickness]]);
         }
 
         // Right Clamp
         translate([
-            post_start_x + post_size + clearance,
+            post_start_x + post_size + clearance, 
             mount_depth/2 - clamp_depth, // MOVED: Now at the positive Y end (enclosed side)
             -leg_height
         ]) {
             cube([wall_thickness, clamp_depth, leg_height + overlap]);
-            translate([0, clamp_depth, 0])
+            translate([0, clamp_depth, 0]) 
                 rotate([90, 0, 0])
                 linear_extrude(clamp_depth)
                 polygon([[0, 0], [-lip_width, wall_thickness], [0, wall_thickness]]);
@@ -82,13 +83,17 @@ module wire_cover_mount() {
     }
 }
 
-// --- Render ---
-color("skyblue") wire_cover_mount();
+// --- Render (Rotated 180 degrees so clips are on TOP) ---
+rotate([90, 0, 0]) {
+    color("skyblue") wire_cover_mount();
+}
 
-// --- Visual Ghost of Posts (For context - Showing new position) ---
-%union() {
-    translate([-post_start_x - post_size, mount_depth/2 - clamp_depth - 10, -post_size - clearance])
-        color("orange") cube([post_size, clamp_depth + 20, post_size]);
-    translate([post_start_x, mount_depth/2 - clamp_depth - 10, -post_size - clearance])
-        color("orange") cube([post_size, clamp_depth + 20, post_size]);
+// --- Visual Ghost of Posts (Rotated to match) ---
+rotate([90, 0, 0]) {
+    %union() {
+        translate([-post_start_x - post_size, mount_depth/2 - clamp_depth - 10, -post_size - clearance])
+            color("orange") cube([post_size, clamp_depth + 20, post_size]);
+        translate([post_start_x, mount_depth/2 - clamp_depth - 10, -post_size - clearance])
+            color("orange") cube([post_size, clamp_depth + 20, post_size]);
+    }
 }
