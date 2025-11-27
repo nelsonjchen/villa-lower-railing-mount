@@ -11,7 +11,7 @@ post_gap_inches = 3.6;
 post_gap = post_gap_inches * inch;
 
 // Mount Dimensions
-mount_thickness = 100;        // Height of the box
+mount_thickness = 40;        // Height of the box
 mount_depth = 120;            // Depth of the box
 clamp_depth = 20;             // Depth of the clamps only
 lip_width = 3;

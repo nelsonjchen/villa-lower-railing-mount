@@ -1,14 +1,14 @@
 # Makefile for clamp
 
-SCAD_FILE = clamp.scad
-OUTPUT = clamp.stl
+SCAD_FILES = clamp.scad cover.scad
+OUTPUTS = $(SCAD_FILES:.scad=.stl)
 
-all: $(OUTPUT)
+all: $(OUTPUTS)
 
-$(OUTPUT): $(SCAD_FILE)
+%.stl: %.scad
 	openscad -o $@ $<
 
 clean:
-	rm -f $(OUTPUT)
+	rm -f $(OUTPUTS)
 
 .PHONY: all clean
