@@ -26,7 +26,7 @@ rail_offset = 3;
 
 // Baseboard Cutout Dimensions
 notch_height = 1.25 * inch;   // Height of the cutout (Z)
-notch_depth = 0.25 * inch;    // Depth of the cutout from the back wall (Y)
+notch_depth = 0.5 * inch;    // Depth of the cutout from the back wall (Y)
 
 // Rounding Dimensions
 rounding_radius = 5.0;        // Radius for the front edges
