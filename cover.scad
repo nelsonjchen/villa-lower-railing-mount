@@ -5,6 +5,7 @@
 // - Top is SOLID.
 // - Bottom is OPEN.
 // - Includes Baseboard Notches (Bottom-Back corners).
+// - Includes Reinforcement Blocks for Clamps.
 
 // --- Dimensions ---
 inch = 25.4;
@@ -57,7 +58,7 @@ module wire_cover_mount() {
                 mount_depth + overlap,                  // Cut all the way out the BACK
                 mount_height - wall_thickness + overlap // Cut upwards, Stop before Ceiling (Keep Top Solid)
             ]);
-            
+
             // C. Baseboard Notches (Bottom Back Corners)
             // Left Notch
             translate([
@@ -70,7 +71,7 @@ module wire_cover_mount() {
                 notch_depth + overlap,         // Cut to the back edge
                 notch_height + overlap         // Cut up to notch height
             ]);
-            
+
             // Right Notch
             translate([
                 total_width/2 - wall_thickness - overlap, // Start inside Right Wall
@@ -78,8 +79,8 @@ module wire_cover_mount() {
                 -mount_height/2 - overlap
             ])
             cube([
-                wall_thickness + 2*overlap, 
-                notch_depth + overlap, 
+                wall_thickness + 2*overlap,
+                notch_depth + overlap,
                 notch_height + overlap
             ]);
         }
@@ -117,6 +118,33 @@ module wire_cover_mount() {
                 [wall_thickness + lip_width, leg_length + wall_thickness],
                 [0, leg_length + wall_thickness]
             ]);
+
+        // 3. REINFORCEMENT BLOCKS (Adhesion)
+        // These blocks bridge the 'rail_offset' gap, connecting the clamps solidly to the side walls.
+
+        // Left Reinforcement
+        translate([
+            -total_width/2 + wall_thickness - overlap, // Start at inner wall
+            -wall_thickness,                           // Start slightly inside the box (anchoring)
+            mount_height/2 - clamp_height              // Same Z height
+        ])
+        cube([
+            rail_offset + overlap,                     // Width to reach the clamp
+            wall_thickness * 2,                        // Depth (overlaps box and clamp start)
+            clamp_height                               // Height
+        ]);
+
+        // Right Reinforcement
+        translate([
+            total_width/2 - wall_thickness - rail_offset, // Start at clamp edge
+            -wall_thickness,
+            mount_height/2 - clamp_height
+        ])
+        cube([
+            rail_offset + overlap,
+            wall_thickness * 2,
+            clamp_height
+        ]);
     }
 }
 
