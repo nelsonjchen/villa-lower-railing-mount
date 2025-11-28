@@ -4,6 +4,7 @@
 // - Back (facing posts/wires) is OPEN.
 // - Top is SOLID.
 // - Bottom is OPEN.
+// - Includes Baseboard Notches (Bottom-Back corners).
 
 // --- Dimensions ---
 inch = 25.4;
@@ -20,6 +21,10 @@ clamp_height = 20;            // Z-axis: Width of the clip band
 lip_width = 3;
 wall_thickness = 1;
 rail_offset = 3;
+
+// Baseboard Cutout Dimensions
+notch_height = 1.25 * inch;   // Height of the cutout (Z)
+notch_depth = 0.25 * inch;    // Depth of the cutout from the back wall (Y)
 
 // Tolerance
 clearance = 0.2;
@@ -51,6 +56,31 @@ module wire_cover_mount() {
                 total_width - (2 * wall_thickness),
                 mount_depth + overlap,                  // Cut all the way out the BACK
                 mount_height - wall_thickness + overlap // Cut upwards, Stop before Ceiling (Keep Top Solid)
+            ]);
+            
+            // C. Baseboard Notches (Bottom Back Corners)
+            // Left Notch
+            translate([
+                -total_width/2 - overlap,      // Start outside Left Wall
+                -notch_depth,                  // Start at notch depth (Y)
+                -mount_height/2 - overlap      // Start at Bottom
+            ])
+            cube([
+                wall_thickness + 2*overlap,    // Cut through the wall thickness
+                notch_depth + overlap,         // Cut to the back edge
+                notch_height + overlap         // Cut up to notch height
+            ]);
+            
+            // Right Notch
+            translate([
+                total_width/2 - wall_thickness - overlap, // Start inside Right Wall
+                -notch_depth,
+                -mount_height/2 - overlap
+            ])
+            cube([
+                wall_thickness + 2*overlap, 
+                notch_depth + overlap, 
+                notch_height + overlap
             ]);
         }
 
