@@ -1,12 +1,12 @@
 // --- Parametric Wire Cover Mount ---
 // Status: Box is a CAP.
-// - Front (facing room) is SOLID.
-// - Back (facing posts/wires) is OPEN.
+// - Front (facing room) is SOLID and ROUNDED (Top & Sides).
+// - Back (facing posts/wires) is OPEN and SQUARE.
 // - Top is SOLID.
-// - Bottom is OPEN.
-// - Includes Baseboard Notches (Bottom-Back corners).
-// - Includes Reinforcement Blocks for Clamps.
-// - Includes Central Bridge (Thin Roof Extension between posts).
+// - Bottom is OPEN (Fixed rendering artifact).
+// - Includes Baseboard Notches (Fixed visibility).
+// - Includes Reinforcement Blocks.
+// - Includes Central Bridge.
 
 // --- Dimensions ---
 inch = 25.4;
@@ -28,10 +28,13 @@ rail_offset = 3;
 notch_height = 1.25 * inch;   // Height of the cutout (Z)
 notch_depth = 0.25 * inch;    // Depth of the cutout from the back wall (Y)
 
+// Rounding Dimensions
+rounding_radius = 5.0;        // Radius for the front edges
+
 // Tolerance
 clearance = 0.2;
 overlap = 0.1;
-visor_clearance = 3.0;        // Increased clearance for the central bridge (to prevent binding)
+visor_clearance = 3.0;
 
 // --- Calculations ---
 total_width = post_gap + (2 * post_size) + (2 * wall_thickness) + (2 * clearance) + (2 * rail_offset);
@@ -40,60 +43,87 @@ leg_length = post_size + wall_thickness + (clearance * 2);
 
 $fn = 50;
 
+// Helper Module: Creates a box with a rounded Front Face but Square Back Face
+module rounded_front_box(w, d, h, r) {
+    hull() {
+        // 1. Back Face (Square) at Y = 0 (relative to local origin)
+        translate([-w/2, 0, -h/2]) cube([w, 0.1, h]);
+        
+        // 2. Front Face (Rounded Edges) at Y = -d
+        // Top-Left Corner
+        translate([-w/2 + r, -d + r, h/2 - r]) sphere(r=r);
+        // Top-Right Corner
+        translate([w/2 - r, -d + r, h/2 - r]) sphere(r=r);
+        // Bottom-Left Corner
+        translate([-w/2 + r, -d + r, -h/2]) cylinder(r=r, h=0.1);
+        // Bottom-Right Corner
+        translate([w/2 - r, -d + r, -h/2]) cylinder(r=r, h=0.1);
+    }
+}
+
 module wire_cover_mount() {
     union() {
         // 1. THE MAIN HOLLOW BOX (The Cap)
         difference() {
-            // A. Outer Shell
-            // Y goes from -40 to 0 (0 is the face touching the clamps)
-            translate([-total_width/2, -mount_depth, -mount_height/2])
-                cube([total_width, mount_depth, mount_height]);
+            // A. Positive Shape
+            translate([0, 0, 0])
+                rounded_front_box(total_width, mount_depth, mount_height, rounding_radius);
+            
+            // B. Negative Shape (Hollowout)
+            // Extends much lower to prevent bottom artifacts
+            hull() {
+                $iw = total_width - 2*wall_thickness;
+                $ir = rounding_radius - wall_thickness;
+                $id = mount_depth - wall_thickness;
+                
+                // Z-LIMITS
+                $z_top = mount_height/2 - wall_thickness;
+                // Extend 50mm down to guaranteed clear the bottom
+                $z_bottom = -mount_height/2 - 50.0; 
+                
+                // 1. Back Face Cutout
+                translate([- $iw/2, overlap, $z_bottom]) 
+                    cube([$iw, 0.1, $z_top - $z_bottom]); 
+                
+                // 2. Front Face Cutout
+                translate([- $iw/2 + $ir, -$id + $ir, $z_top - $ir]) sphere(r=$ir);
+                translate([$iw/2 - $ir, -$id + $ir, $z_top - $ir]) sphere(r=$ir);
+                translate([- $iw/2 + $ir, -$id + $ir, $z_bottom]) cylinder(r=$ir, h=0.1);
+                translate([$iw/2 - $ir, -$id + $ir, $z_bottom]) cylinder(r=$ir, h=0.1);
+            }
 
-            // B. Inner Cavity (The Cutout)
-            translate([
-                -total_width/2 + wall_thickness, // Inside Left Wall
-                -mount_depth + wall_thickness,   // Inside Front Face (Keep Front Solid)
-                -mount_height/2 - overlap        // Start BELOW Bottom (Cut Floor Open)
-            ])
-            cube([
-                total_width - (2 * wall_thickness),
-                mount_depth + overlap,                  // Cut all the way out the BACK
-                mount_height - wall_thickness + overlap // Cut upwards, Stop before Ceiling (Keep Top Solid)
-            ]);
-
-            // C. Baseboard Notches (Bottom Back Corners)
+            // C. Baseboard Notches (Simplified Cubes)
             // Left Notch
+            // Starts outside X, outside Y (back), and outside Z (bottom)
             translate([
-                -total_width/2 - overlap,      // Start outside Left Wall
-                -notch_depth,                  // Start at notch depth (Y)
-                -mount_height/2 - overlap      // Start at Bottom
+                -total_width/2 - 5,        // X: Start well outside
+                -notch_depth,              // Y: Start at cut depth
+                -mount_height/2 - 5        // Z: Start well below
             ])
             cube([
-                wall_thickness + 2*overlap,    // Cut through the wall thickness
-                notch_depth + overlap,         // Cut to the back edge
-                notch_height + overlap         // Cut up to notch height
+                wall_thickness + 10,       // Width: Cut inward past wall
+                notch_depth + 5,           // Depth: Cut backward past Y=0
+                notch_height + 5           // Height: Cut upward to notch height
             ]);
 
             // Right Notch
             translate([
-                total_width/2 - wall_thickness - overlap, // Start inside Right Wall
+                total_width/2 - wall_thickness - 0.1, // X: Start just inside right wall
                 -notch_depth,
-                -mount_height/2 - overlap
+                -mount_height/2 - 5
             ])
             cube([
-                wall_thickness + 2*overlap,
-                notch_depth + overlap,
-                notch_height + overlap
+                wall_thickness + 10,       // Width: Cut outward
+                notch_depth + 5, 
+                notch_height + 5
             ]);
         }
 
         // 2. THE CLAMPS
-        // Attached to the back rim (Y=0), extending towards posts (Positive Y)
-
         // Left Clamp
         translate([
             -post_start_x - post_size - wall_thickness - clearance,
-            0, // Starts at back rim of box
+            0,
             mount_height/2 - clamp_height
         ])
         linear_extrude(clamp_height)
@@ -105,7 +135,7 @@ module wire_cover_mount() {
                 [0, leg_length + wall_thickness]
             ]);
 
-        // Right Clamp (Mirrored)
+        // Right Clamp
         translate([
             post_start_x + post_size + clearance + wall_thickness,
             0,
@@ -121,46 +151,16 @@ module wire_cover_mount() {
                 [0, leg_length + wall_thickness]
             ]);
 
-        // 3. REINFORCEMENT BLOCKS (Adhesion)
-        // These blocks bridge the 'rail_offset' gap, connecting the clamps solidly to the side walls.
+        // 3. REINFORCEMENT BLOCKS
+        translate([-total_width/2 + wall_thickness - overlap, -wall_thickness, mount_height/2 - clamp_height])
+            cube([rail_offset + overlap, wall_thickness * 2, clamp_height]);
 
-        // Left Reinforcement
-        translate([
-            -total_width/2 + wall_thickness - overlap, // Start at inner wall
-            -wall_thickness,                           // Start slightly inside the box (anchoring)
-            mount_height/2 - clamp_height              // Same Z height
-        ])
-        cube([
-            rail_offset + overlap,                     // Width to reach the clamp
-            wall_thickness * 2,                        // Depth (overlaps box and clamp start)
-            clamp_height                               // Height
-        ]);
+        translate([total_width/2 - wall_thickness - rail_offset, -wall_thickness, mount_height/2 - clamp_height])
+            cube([rail_offset + overlap, wall_thickness * 2, clamp_height]);
 
-        // Right Reinforcement
-        translate([
-            total_width/2 - wall_thickness - rail_offset, // Start at clamp edge
-            -wall_thickness,
-            mount_height/2 - clamp_height
-        ])
-        cube([
-            rail_offset + overlap,
-            wall_thickness * 2,
-            clamp_height
-        ]);
-
-        // 4. CENTRAL BRIDGE (Covers area between posts)
-        // Thin Roof Extension: Extends the top surface between the posts.
-        // Uses 'visor_clearance' to ensure it doesn't bind against the posts.
-        translate([
-            -post_start_x + visor_clearance,   // Start further in
-            0,                                 // Start at box face
-            mount_height/2 - wall_thickness    // Flush with the TOP surface
-        ])
-        cube([
-            post_gap - (2 * visor_clearance),  // Narrower width
-            leg_length,                        // Depth: Reach as far as the legs
-            wall_thickness                     // Height: Thin wall (Roof)
-        ]);
+        // 4. CENTRAL BRIDGE
+        translate([-post_start_x + visor_clearance, 0, mount_height/2 - wall_thickness])
+            cube([post_gap - (2 * visor_clearance), leg_length, wall_thickness]);
     }
 }
 
@@ -168,11 +168,9 @@ module wire_cover_mount() {
 color("skyblue") wire_cover_mount();
 
 // --- Visual Ghost of Posts ---
-// Shows how the cover fits OVER the area between posts
 %union() {
     translate([-post_start_x - post_size, leg_length - post_size - clearance, -mount_height/2])
         color("orange") cube([post_size, post_size, mount_height + 20]);
-
     translate([post_start_x, leg_length - post_size - clearance, -mount_height/2])
         color("orange") cube([post_size, post_size, mount_height + 20]);
 }
