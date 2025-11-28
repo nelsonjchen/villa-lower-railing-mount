@@ -17,7 +17,7 @@ post_gap_inches = 3.6;
 post_gap = post_gap_inches * inch;
 
 // Mount Dimensions
-mount_depth = 40;             // Y-axis: How far out the box sticks
+mount_depth = 20;             // Y-axis: How far out the box sticks
 mount_height = 120;           // Z-axis: Vertical length
 clamp_height = 20;            // Z-axis: Width of the clip band
 lip_width = 3;
