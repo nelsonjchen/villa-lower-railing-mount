@@ -18,11 +18,11 @@ mount_depth = 40;             // Y-axis: How far out the box sticks
 mount_height = 120;           // Z-axis: Vertical length
 clamp_height = 20;            // Z-axis: Width of the clip band
 lip_width = 3;
-wall_thickness = 3;
+wall_thickness = 1;
 rail_offset = 3;
 
 // Tolerance
-clearance = 1.0;
+clearance = 0.2;
 overlap = 0.1;
 
 // --- Calculations ---
