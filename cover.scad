@@ -29,8 +29,9 @@ notch_height = 1.25 * inch;   // Height of the cutout (Z)
 notch_depth = 0.25 * inch;    // Depth of the cutout from the back wall (Y)
 
 // Tolerance
-clearance = 0.3;
+clearance = 0.2;
 overlap = 0.1;
+visor_clearance = 3.0;        // Increased clearance for the central bridge (to prevent binding)
 
 // --- Calculations ---
 total_width = post_gap + (2 * post_size) + (2 * wall_thickness) + (2 * clearance) + (2 * rail_offset);
@@ -59,7 +60,7 @@ module wire_cover_mount() {
                 mount_depth + overlap,                  // Cut all the way out the BACK
                 mount_height - wall_thickness + overlap // Cut upwards, Stop before Ceiling (Keep Top Solid)
             ]);
-            
+
             // C. Baseboard Notches (Bottom Back Corners)
             // Left Notch
             translate([
@@ -72,7 +73,7 @@ module wire_cover_mount() {
                 notch_depth + overlap,         // Cut to the back edge
                 notch_height + overlap         // Cut up to notch height
             ]);
-            
+
             // Right Notch
             translate([
                 total_width/2 - wall_thickness - overlap, // Start inside Right Wall
@@ -80,8 +81,8 @@ module wire_cover_mount() {
                 -mount_height/2 - overlap
             ])
             cube([
-                wall_thickness + 2*overlap, 
-                notch_depth + overlap, 
+                wall_thickness + 2*overlap,
+                notch_depth + overlap,
                 notch_height + overlap
             ]);
         }
@@ -122,7 +123,7 @@ module wire_cover_mount() {
 
         // 3. REINFORCEMENT BLOCKS (Adhesion)
         // These blocks bridge the 'rail_offset' gap, connecting the clamps solidly to the side walls.
-        
+
         // Left Reinforcement
         translate([
             -total_width/2 + wall_thickness - overlap, // Start at inner wall
@@ -142,22 +143,23 @@ module wire_cover_mount() {
             mount_height/2 - clamp_height
         ])
         cube([
-            rail_offset + overlap, 
-            wall_thickness * 2, 
+            rail_offset + overlap,
+            wall_thickness * 2,
             clamp_height
         ]);
 
         // 4. CENTRAL BRIDGE (Covers area between posts)
         // Thin Roof Extension: Extends the top surface between the posts.
+        // Uses 'visor_clearance' to ensure it doesn't bind against the posts.
         translate([
-            -post_start_x + clearance,   // Start at inner edge of Left Post
-            0,                           // Start at box face
-            mount_height/2 - wall_thickness // Flush with the TOP surface
+            -post_start_x + visor_clearance,   // Start further in
+            0,                                 // Start at box face
+            mount_height/2 - wall_thickness    // Flush with the TOP surface
         ])
         cube([
-            post_gap - (2 * clearance),  // Width: Span the gap
-            leg_length,                  // Depth: Reach as far as the legs
-            wall_thickness               // Height: Thin wall (Roof)
+            post_gap - (2 * visor_clearance),  // Narrower width
+            leg_length,                        // Depth: Reach as far as the legs
+            wall_thickness                     // Height: Thin wall (Roof)
         ]);
     }
 }
