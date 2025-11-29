@@ -15,15 +15,15 @@ mount_height = 120;           // Z-axis: Vertical length
 clamp_height = 20;            // Z-axis: Width of the clip band
 lip_width = 4;                // How deep the hook grabs
 lead_in_length = 5;           // Length of the angled ramp tip
-wall_thickness = 1;
+wall_thickness = 1.6;
 rail_offset = 3;
 
 // Baseboard Cutout Dimensions
-notch_height = 1.25 * inch;   
-notch_depth = 0.5 * inch;    
+notch_height = 1.25 * inch;
+notch_depth = 0.5 * inch;
 
 // Rounding Dimensions
-rounding_radius = 5.0;        
+rounding_radius = 5.0;
 
 // Tolerance
 clearance = 1.0;
@@ -54,17 +54,17 @@ module wire_cover_mount() {
         difference() {
             translate([0, 0, 0])
                 rounded_front_box(total_width, mount_depth, mount_height, rounding_radius);
-            
+
             hull() {
                 $iw = total_width - 2*wall_thickness;
                 $ir = rounding_radius - wall_thickness;
                 $id = mount_depth - wall_thickness;
                 $z_top = mount_height/2 - wall_thickness;
-                $z_bottom = -mount_height/2 - 50.0; 
-                
-                translate([- $iw/2, overlap, $z_bottom]) 
-                    cube([$iw, 0.1, $z_top - $z_bottom]); 
-                
+                $z_bottom = -mount_height/2 - 50.0;
+
+                translate([- $iw/2, overlap, $z_bottom])
+                    cube([$iw, 0.1, $z_top - $z_bottom]);
+
                 translate([- $iw/2 + $ir, -$id + $ir, $z_top - $ir]) sphere(r=$ir);
                 translate([$iw/2 - $ir, -$id + $ir, $z_top - $ir]) sphere(r=$ir);
                 translate([- $iw/2 + $ir, -$id + $ir, $z_bottom]) cylinder(r=$ir, h=0.1);
