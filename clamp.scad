@@ -29,7 +29,8 @@ clearance = 1.0;
 $fn = 60;
 
 // --- Calculations ---
-total_width = post_gap + (2 * post_size) + (2 * wall_thickness);
+// Corrected total_width to properly account for the clearance on both sides
+total_width = post_gap + (2 * post_size) + (2 * wall_thickness) + (2 * clearance);
 post_start_x = post_gap / 2;
 
 module rails() {
@@ -50,28 +51,30 @@ module mount() {
       translate([-total_width / 2, -mount_depth / 2, 0])
         cube([total_width, mount_depth, mount_thickness]);
 
-      // Left Leg Solid (Tapers inwards at bottom for upside-down 3D printing without supports)
+      // Left Leg Solid
+      // Tapers only the hook on the inside so it remains open at the bottom for installation
       hull() {
         translate([-total_width / 2, -mount_depth / 2, 0])
-          cube([wall_thickness + post_size, mount_depth, 0.1]);
+          cube([wall_thickness + clearance + lip_width, mount_depth, 0.1]);
 
         translate([-total_width / 2, -mount_depth / 2, -post_size])
-          cube([wall_thickness + post_size, mount_depth, 0.1]);
+          cube([wall_thickness + clearance + lip_width, mount_depth, 0.1]);
 
-        translate([-total_width / 2, -mount_depth / 2, -post_size - wall_thickness])
-          cube([wall_thickness + post_size + lip_width, mount_depth, 0.1]);
+        translate([-total_width / 2, -mount_depth / 2, -post_size - lip_width])
+          cube([wall_thickness + clearance, mount_depth, 0.1]);
       }
 
-      // Right Leg Solid (Tapers inwards at bottom for upside-down 3D printing)
+      // Right Leg Solid
+      // Mirrored logically from the right side down, ensuring the inner gap is left open
       hull() {
-        translate([post_start_x, -mount_depth / 2, 0])
-          cube([post_size + wall_thickness, mount_depth, 0.1]);
+        translate([total_width / 2 - (wall_thickness + clearance + lip_width), -mount_depth / 2, 0])
+          cube([wall_thickness + clearance + lip_width, mount_depth, 0.1]);
 
-        translate([post_start_x, -mount_depth / 2, -post_size])
-          cube([post_size + wall_thickness, mount_depth, 0.1]);
+        translate([total_width / 2 - (wall_thickness + clearance + lip_width), -mount_depth / 2, -post_size])
+          cube([wall_thickness + clearance + lip_width, mount_depth, 0.1]);
 
-        translate([post_start_x - lip_width, -mount_depth / 2, -post_size - wall_thickness])
-          cube([lip_width + post_size + wall_thickness, mount_depth, 0.1]);
+        translate([total_width / 2 - (wall_thickness + clearance), -mount_depth / 2, -post_size - lip_width])
+          cube([wall_thickness + clearance, mount_depth, 0.1]);
       }
 
       // The +Z 85mm Extension Tower (A-frame arch)
@@ -86,10 +89,11 @@ module mount() {
       }
     }
 
-    // --- 2. Minkowski Rail Cutout (Deletes rail shape + clearance from the solid body) ---
+    // --- 2. Minkowski Rail Cutout ---
+    // Exactly deletes the expanded orange railing space inside the clamp
     minkowski() {
       rails();
-      // A sphere provides beautifully rounded inner corners and exact omnidirectional clearance
+      // 1mm radial clearance ensures snapping fits smoothly and elegantly fillets the inner edges
       sphere(r=clearance, $fn=16);
     }
 
