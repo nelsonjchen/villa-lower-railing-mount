@@ -43,7 +43,7 @@ module rails() {
     cube([post_size, mount_depth * 3, post_size]);
 }
 
-module mount() {
+module mount(clamp_only = false) {
   difference() {
     // --- 1. Solid Bodies ---
     union() {
@@ -77,15 +77,17 @@ module mount() {
           cube([wall_thickness + clearance, mount_depth, 0.1]);
       }
 
-      // The +Z 85mm Extension Tower (A-frame arch)
-      hull() {
-        // Base of the tower covering the center span
-        translate([-post_start_x, -mount_depth / 2, 0])
-          cube([post_gap, mount_depth, mount_thickness]);
+      if (!clamp_only) {
+        // The +Z 85mm Extension Tower (A-frame arch)
+        hull() {
+          // Base of the tower covering the center span
+          translate([-post_start_x, -mount_depth / 2, 0])
+            cube([post_gap, mount_depth, mount_thickness]);
 
-        // Top Mount plate for camera holes (+Z 85mm)
-        translate([-(bolt_spacing + 24) / 2, -mount_depth / 2, extension_height])
-          cube([bolt_spacing + 24, mount_depth, mount_thickness]);
+          // Top Mount plate for camera holes (+Z 85mm)
+          translate([-(bolt_spacing + 24) / 2, -mount_depth / 2, extension_height])
+            cube([bolt_spacing + 24, mount_depth, mount_thickness]);
+        }
       }
     }
 
@@ -97,39 +99,51 @@ module mount() {
       sphere(r=clearance, $fn=16);
     }
 
-    // --- 3. Bolt Holes Subtraction ---
-    // Left camera hole at the top
-    translate([-bolt_spacing / 2, 0, extension_height - 5])
-      cylinder(h=mount_thickness + 15, d=bolt_diameter);
+    if (!clamp_only) {
+      // --- 3. Bolt Holes Subtraction ---
+      // Left camera hole at the top
+      translate([-bolt_spacing / 2, 0, extension_height - 5])
+        cylinder(h=mount_thickness + 15, d=bolt_diameter);
 
-    // Right camera hole at the top
-    translate([bolt_spacing / 2, 0, extension_height - 5])
-      cylinder(h=mount_thickness + 15, d=bolt_diameter);
+      // Right camera hole at the top
+      translate([bolt_spacing / 2, 0, extension_height - 5])
+        cylinder(h=mount_thickness + 15, d=bolt_diameter);
 
-    // --- 4. Arch Cutout (Saves material, allows nut access underneath) ---
-    hull() {
-      // Bottom of the arch
-      translate([-(post_start_x - 12), -mount_depth / 2 - 1, mount_thickness + 5])
-        cube([(post_start_x - 12) * 2, mount_depth + 2, 0.1]);
+      // --- 4. Arch Cutout (Saves material, allows nut access underneath) ---
+      hull() {
+        // Bottom of the arch
+        translate([-(post_start_x - 12), -mount_depth / 2 - 1, mount_thickness + 5])
+          cube([(post_start_x - 12) * 2, mount_depth + 2, 0.1]);
 
-      // Top of the arch
-      translate([-(bolt_spacing / 2 + 6), -mount_depth / 2 - 1, extension_height])
-        cube([(bolt_spacing / 2 + 6) * 2, mount_depth + 2, 0.1]);
+        // Top of the arch
+        translate([-(bolt_spacing / 2 + 6), -mount_depth / 2 - 1, extension_height])
+          cube([(bolt_spacing / 2 + 6) * 2, mount_depth + 2, 0.1]);
+      }
     }
   }
 }
 
+// Check if we are rendering the test piece from command line
+// Usage: openscad -D 'RENDER_TEST=true' -o clamp_test.stl clamp.scad
+RENDER_TEST = false;
+
 // --- Render the Part ---
-color("lightgrey") mount();
+if (RENDER_TEST) {
+  color("lightgreen") mount(clamp_only=true);
+} else {
+  color("lightgrey") mount();
+}
 
 // --- Visual Ghost of the Posts (For debugging/Checking fit) ---
 %union() {
   color("orange") rails();
 
-  // Distance Marker (Visual aid for checking bolt spacing)
-  // Preserved and moved +85mm up as requested
-  translate([-bolt_spacing / 2, 0, extension_height + mount_thickness + 2])
-    color("red") cylinder(h=2, d=2);
-  translate([bolt_spacing / 2, 0, extension_height + mount_thickness + 2])
-    color("red") cylinder(h=2, d=2);
+  if (!RENDER_TEST) {
+    // Distance Marker (Visual aid for checking bolt spacing)
+    // Preserved and moved +85mm up as requested
+    translate([-bolt_spacing / 2, 0, extension_height + mount_thickness + 2])
+      color("red") cylinder(h=2, d=2);
+    translate([bolt_spacing / 2, 0, extension_height + mount_thickness + 2])
+      color("red") cylinder(h=2, d=2);
+  }
 }
